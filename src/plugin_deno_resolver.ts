@@ -6,6 +6,7 @@ import {
   Scopes,
   SpecifierMap,
   toFileUrl,
+  join,
 } from "../deps.ts";
 import { readDenoConfig, urlToEsbuildResolution } from "./shared.ts";
 
@@ -104,6 +105,12 @@ export function denoResolverPlugin(
           if (!res.external) nodeModulesPaths.add(res.path);
           return res;
         }
+
+        if (args.namespace=='file' && /\./.test(args.path) && !/\.(js|jsx|ts|tsx|mjs|cjs)$/.test(args.path) && !/\:/.test(args.path)) {
+          if (Deno.env.get('LOG')=='DEBUG') console.log('TO FILE resolver:', args.path, args.namespace);
+          return { path: join(args.resolveDir, args.path) }
+        }
+        if (Deno.env.get('LOG')=='DEBUG') console.log('TO ESM resolver:', args.path, args.namespace);
 
         // The first pass resolver performs synchronous resolution. This
         // includes relative to absolute specifier resolution and import map
